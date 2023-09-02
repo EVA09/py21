@@ -119,3 +119,9 @@
   var bad = function (msg) {
     ws21.send(json21('bad'))
   }
+  var hand = function () {
+    ws21.send(json21('hand'))
+  }
+  var now = function () {
+    ws21.send(json21('now'))
+  }
