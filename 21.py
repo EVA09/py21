@@ -426,13 +426,16 @@ async def userMaster(user):
 
 
 async def ready(user):
+    print('【Status】：%s'%STATUS)
     if "wait" != STATUS:
         return await userSend(user, "tip", "当前有对局未结束，请稍后，新一局开始后将马上为您接入")
     user["status"] = "wait"
+    global TABLE
     async with WORK_LOCK:
         exists = []
-        for user in TABLE:
-            exists.append(user["uid"])
+        for u1 in TABLE:
+            exists.append(u1["uid"])
+        print(exists)
         for id in LINK:
             if user["status"] == "wait" and id not in exists:
                 TABLE.append(user)
@@ -585,18 +588,19 @@ async def handler(websocket):
             logging.warning("【服务端断开】")
         elif 1005 == e.rcvd.code:
             logging.warning("【客户端断开】")
-        if websocket.id in LINK:
-            LINK.pop(websocket.id)
-            for index, user in enumerate(TABLE):
-                if user["uid"] == websocket.id:
-                    TABLE.pop(index)
-                    broadcast("{} 掉线了".format(user["name"]))
-        if len(LINK) == 0:
-            clearDesk()
         # 清理进程
     except Exception as e:
         logging.exception(e)
-    print("【触发循环结束】")
+
+    if websocket.id in LINK:
+        LINK.pop(websocket.id)
+        for index, user in enumerate(TABLE):
+            if user["uid"] == websocket.id:
+                TABLE.pop(index)
+                broadcast("{} 掉线了".format(user["name"]))
+    if len(LINK) <= 1:
+        clearDesk()
+    print("【触发循环结束】",LINK)
 
 
 async def main():
